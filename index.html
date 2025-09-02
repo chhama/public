@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
   </head>
   <body>
-    <a-scene mindar-image="imageTargetSrc: ./markers/dual.mind; maxTrack: 1; filterMinCF:0.00005;; filterBeta: 17000" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene mindar-image="imageTargetSrc: ./markers/dual.mind; maxTrack: 1; filterMinCF:0.00009;; filterBeta: 4000" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       <a-assets>
         <img id="ncard" src="markers/newtontext.jpg" />
          <img id="ecard" src="markers/einsteintext.jpg" />
@@ -29,5 +29,82 @@
         <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="1.505 1.505 1.505" src="#bearModel" animation-mixer  orbit-controls="target: 0 -0.25 0; minDistance: 0.5; maxDistance: 5;">
       </a-entity>
     </a-scene>
+
+
+    <script>
+    // Smoothing variables
+    const smoothFactor = 0.3; // How much to smooth (0.1 = very smooth, 0.9 = very responsive)
+    const smoothCount = 5; // How many frames to average
+    let previousPositions = {};
+    let frameCount = 0;
+
+    // Function to get a smoothed position
+    function getSmoothedPosition(entity, targetIndex) {
+        const currentPosition = entity.getAttribute('position');
+
+        // Initialize the history for this target if it doesn't exist
+        if (!previousPositions[targetIndex]) {
+            previousPositions[targetIndex] = Array(smoothCount).fill().map(() => Object.assign({}, currentPosition));
+        }
+
+        // Store the current position in the history
+        previousPositions[targetIndex][frameCount % smoothCount] = Object.assign({}, currentPosition);
+
+        // Calculate the average position
+        let avgX = 0, avgY = 0, avgZ = 0;
+        for (let i = 0; i < smoothCount; i++) {
+            avgX += previousPositions[targetIndex][i].x;
+            avgY += previousPositions[targetIndex][i].y;
+            avgZ += previousPositions[targetIndex][i].z;
+        }
+        avgX /= smoothCount;
+        avgY /= smoothCount;
+        avgZ /= smoothCount;
+
+        // Apply the smoothing
+        const smoothedPosition = {
+            x: currentPosition.x * (1 - smoothFactor) + avgX * smoothFactor,
+            y: currentPosition.y * (1 - smoothFactor) + avgY * smoothFactor,
+            z: currentPosition.z * (1 - smoothFactor) + avgZ * smoothFactor
+        };
+
+        frameCount++;
+        return smoothedPosition;
+    }
+
+    // Apply smoothing on every tick of the scene
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('tick', function() {
+        const targetEntities = document.querySelectorAll('[mindar-image-target]');
+        
+        targetEntities.forEach(entity => {
+            const targetIndex = entity.getAttribute('mindar-image-target').targetIndex;
+            const model = entity.querySelector('[gltf-model]');
+            const plane = entity.querySelector('[src]');
+
+            if (model && plane) {
+                const smoothedPos = getSmoothedPosition(entity, targetIndex);
+                const currentRotation = entity.getAttribute('rotation');
+                
+                // Create a new parent entity for smooth movement
+                let smoothEntity = entity.querySelector('#smooth-holder-' + targetIndex);
+                if (!smoothEntity) {
+                    smoothEntity = document.createElement('a-entity');
+                    smoothEntity.setAttribute('id', 'smooth-holder-' + targetIndex);
+                    entity.appendChild(smoothEntity);
+                    // Move the model and plane to be children of the smooth entity
+                    smoothEntity.appendChild(model);
+                    smoothEntity.appendChild(plane);
+                }
+                
+                // Apply the smoothed position and original rotation
+                smoothEntity.setAttribute('position', smoothedPos);
+                smoothEntity.setAttribute('rotation', currentRotation);
+            }
+        });
+    });
+</script>
+
+
   </body>
 </html>
