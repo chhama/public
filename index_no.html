@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstein AR Experience with MindAR</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: Arial; }
+        #loading, #status, #debug {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        #loading { top: 50%; transform: translate(-50%, -50%); font-size: 24px; }
+        #status { top: 20px; }
+        #debug { top: 70px; font-size: 12px; }
+        .detected { background: rgba(76, 175, 80, 0.9) !important; }
+        .not-detected { background: rgba(244, 67, 54, 0.9) !important; }
+        #marker-border {
+            visibility: hidden;
+            position: absolute;
+            box-sizing: border-box;
+            border: 6px solid #00ff00;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #00ff00;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">Loading AR Experience... <br>Please allow camera access.</div>
+    <div id="status" class="not-detected">Status: Not Detected</div>
+    <div id="debug">Position: X: 0.0, Y: 0.0, Z: 0.0</div>
+    <div id="marker-border"></div>
+
+    <a-scene embedded vr-mode-ui="enabled: false" mindar-image="imageTargetSrc: ./markers/einstein.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <a-asset-item id="einsteinModel" src="models/einstein.glb"></a-asset-item>
+        </a-assets>
+
+        <a-entity mindar-image-target="targetIndex: 0">
+            <a-entity
+                id="model"
+                gltf-model="#einsteinModel"
+                scale="1.5 1.5 1.5"
+                position="0 1.5 0"
+                rotation="0 180 0"
+                animation="property: rotation; to: 0 540 0; loop: true; dur: 10000"
+                visible="true">
+            </a-entity>
+        </a-entity>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    </a-scene>
+
+    <script>
+        const loadingElement = document.getElementById('loading');
+        const statusElement = document.getElementById('status');
+        const debugElement = document.getElementById('debug');
+        const borderElement = document.getElementById('marker-border');
+
+        const sceneEl = document.querySelector('a-scene');
+        const marker = document.querySelector('a-entity[mindar-image-target]');
+        const model = document.getElementById('model');
+
+        sceneEl.addEventListener('arReady', (e) => {
+            setTimeout(() => { loadingElement.style.display = 'none'; }, 1500);
+        });
+
+        marker.addEventListener("targetFound", (e) => {
+            model.setAttribute('visible', 'true');
+            statusElement.textContent = 'Status: Detected';
+            statusElement.className = 'detected';
+            
+            borderElement.style.visibility = 'visible';
+
+            const pos = model.getAttribute('position');
+            debugElement.textContent = `Position: X: ${pos.x.toFixed(1)}, Y: ${pos.y.toFixed(1)}, Z: ${pos.z.toFixed(1)}`;
+        });
+
+        marker.addEventListener("targetLost", (e) => {
+            model.setAttribute('visible', 'false');
+            statusElement.textContent = 'Status: Not Detected';
+            statusElement.className = 'not-detected';
+            borderElement.style.visibility = 'hidden';
+        });
+    </script>
+</body>
+</html>
