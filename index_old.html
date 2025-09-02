@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstein AR Experience</title>
+    <!-- Load A-Frame and AR.js -->
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #status {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .detected {
+            /* Green background for 'Detected' */
+            background: rgba(76, 175, 80, 0.9) !important; 
+        }
+        .not-detected {
+            /* Red background for 'Not Detected' */
+            background: rgba(244, 67, 54, 0.9) !important; 
+        }
+        /* Initially hide the border */
+        #marker-border {
+            visibility: hidden;
+            position: absolute;
+            box-sizing: border-box;
+            border: 6px solid #00ff00; /* Bright green border */
+            border-radius: 8px;
+            box-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00;
+            pointer-events: none; /* Clicks pass through it */
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">
+        Loading AR Experience... <br>
+        Please allow camera access.
+    </div>
+
+    <div id="status" class="not-detected">
+        Status: Not Detected
+    </div>
+
+    <!-- This div will act as our visual border -->
+    <div id="marker-border"></div>
+
+    <a-scene 
+        embedded 
+        vr-mode-ui="enabled: false" 
+        arjs="sourceType: webcam; debugUIEnabled: false;"
+        renderer="logarithmicDepthBuffer: true;">
+
+        <!-- NFT Marker - Points to your 'einstein' files -->
+        <a-nft 
+            id="marker"
+            type="nft" 
+            url="markers/einstein"
+            smooth="true"
+            smoothCount="300"
+            smoothTolerance=".1"
+            smoothThreshold="5">
+
+            <!-- 3D Model - Points to your Einstein GLB file -->
+            <!-- animation="property: rotation; to: 0 540 0; loop: true; dur: 10000" -->
+            <a-entity
+                gltf-model="url(models/einstein.glb)"
+                scale="400.5 400.5 400.5"
+                position="10 0 0"
+                rotation="0 0 0"
+                
+                visible="false">
+            </a-entity>
+
+        </a-nft>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        // Get elements
+        const loadingElement = document.getElementById('loading');
+        const statusElement = document.getElementById('status');
+        const borderElement = document.getElementById('marker-border');
+        const marker = document.getElementById('marker');
+        const model = marker.querySelector('a-entity');
+        const scene = document.querySelector('a-scene');
+
+        // Hide loading screen once the scene is ready
+        scene.addEventListener('loaded', function(e) {
+            setTimeout(() => { loadingElement.style.display = 'none'; }, 1500);
+        });
+
+        // Function to update the border position and size
+        function updateBorderPosition(matrixCSS) {
+            // matrixCSS is a string like 'matrix3d(...)'
+            // Apply the same transform to our border div
+            borderElement.style.transform = matrixCSS;
+            // Make it visible
+            borderElement.style.visibility = 'visible';
+        }
+
+        // Show model, status, and border when marker is found
+        marker.addEventListener('markerFound', (e) => {
+            // Show the 3D model
+            model.setAttribute('visible', 'true');
+            
+            // Update the status text and style
+            statusElement.textContent = 'Status: Detected';
+            statusElement.classList.remove('not-detected');
+            statusElement.classList.add('detected');
+            
+            // Get the position and size of the marker from the event detail
+            // This is the magic that places the border correctly
+            updateBorderPosition(e.detail.matrixCSS);
+        });
+
+        // Hide model, status, and border when marker is lost
+        marker.addEventListener('markerLost', (e) => {
+            // Hide the 3D model
+            model.setAttribute('visible', 'false');
+            
+            // Update the status text and style
+            statusElement.textContent = 'Status: Not Detected';
+            statusElement.classList.remove('detected');
+            statusElement.classList.add('not-detected');
+            
+            // Hide the border
+            borderElement.style.visibility = 'hidden';
+        });
+    </script>
+</body>
+</html>
