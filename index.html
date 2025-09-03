@@ -1,270 +1,110 @@
-<!DOCTYPE html>
+
 <html>
-<head>
+  <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Einstein & Newton AR Experience</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            background: #000;
-        }
-        
-        /* Loading Screen */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #4CAF50;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .loading-progress {
-            width: 200px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-        
-        .loading-progress-bar {
-            height: 100%;
-            background: #4CAF50;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        
-        .loading-subtext {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-top: 10px;
-        }
-        
-        /* Status indicator */
-        #status {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 20px;
-            z-index: 1000;
-            display: none; /* Hidden until AR is ready */
-        }
-        
-        /* Hide the AR scene until loading is complete */
-        a-scene {
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-    </style>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loading-spinner"></div>
-        <div class="loading-text" id="loading-text">Initializing AR Experience</div>
-        <div class="loading-progress">
-            <div class="loading-progress-bar" id="progress-bar"></div>
-        </div>
-        <div class="loading-subtext" id="loading-subtext">Loading assets...</div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
+  </head>
+  <body>
+    <a-scene mindar-image="imageTargetSrc: ./markers/dual.mind; maxTrack: 1; filterMinCF:0.00009;; filterBeta: 4000" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-assets>
+        <img id="ncard" src="markers/newtontext.jpg" />
+         <img id="ecard" src="markers/einsteintext.jpg" />
 
-    <!-- Status Indicator -->
-    <div id="status">Point camera at a target</div>
+        <a-asset-item id="bearModel" src="models/einstein.glb"></a-asset-item>
+        <a-asset-item id="raccoonModel" src="models/newton.glb"></a-asset-item>
+      </a-assets>
 
-    <a-scene mindar-image="imageTargetSrc: ./markers/dual.mind; maxTrack: 2; filterMinCF: 0.00009; filterBeta: 4000" 
-             color-space="sRGB" 
-             renderer="colorManagement: true, physicallyCorrectLights" 
-             vr-mode-ui="enabled: false" 
-             device-orientation-permission-ui="enabled: false">
-             
-        <a-assets>
-            <img id="ncard" src="markers/newtontext.jpg" />
-            <img id="ecard" src="markers/einsteintext.jpg" />
-            <a-asset-item id="bearModel" src="models/einstein.glb"></a-asset-item>
-            <a-asset-item id="raccoonModel" src="models/newton.glb"></a-asset-item>
-        </a-assets>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-entity mindar-image-target="targetIndex: 1">
+        <a-plane src="#ncard" position="0 1.40 0" height="1.252" width="2.5" rotation="0 0 0"></a-plane>
+<a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="2.305 2.305 2.305" src="#raccoonModel" animation-mixer orbit-controls="target: 0 -0.25 0; minDistance: 0.5; maxDistance: 5;"></a-gltf-model>
+      </a-entity>
+      <a-entity mindar-image-target="targetIndex: 0">
+                <a-plane src="#ecard" position="0 -1.71 0" height="1.552" width="3" rotation="0 0 0"></a-plane>
 
-        <!-- Newton Target -->
-        <a-entity mindar-image-target="targetIndex: 1">
-            <a-plane src="#ncard" position="0 1.40 0" height="1.252" width="2.5" rotation="0 0 0"></a-plane>
-            <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="2.305 2.305 2.305" 
-                         src="#raccoonModel" animation-mixer 
-                         orbit-controls="target: 0 -0.25 0; minDistance: 0.5; maxDistance: 5;">
-            </a-gltf-model>
-        </a-entity>
-
-        <!-- Einstein Target -->
-        <a-entity mindar-image-target="targetIndex: 0">
-            <a-plane src="#ecard" position="0 -1.71 0" height="1.552" width="3" rotation="0 0 0"></a-plane>
-            <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="1.505 1.505 1.505" 
-                         src="#bearModel" animation-mixer 
-                         orbit-controls="target: 0 -0.25 0; minDistance: 0.5; maxDistance: 5;">
-            </a-gltf-model>
-        </a-entity>
+        <a-gltf-model rotation="0 0 0 " position="0 -0.25 0" scale="1.505 1.505 1.505" src="#bearModel" animation-mixer  orbit-controls="target: 0 -0.25 0; minDistance: 0.5; maxDistance: 5;">
+      </a-entity>
     </a-scene>
 
+
     <script>
-        // Get DOM elements
-        const loadingScreen = document.getElementById('loading-screen');
-        const loadingText = document.getElementById('loading-text');
-        const loadingSubtext = document.getElementById('loading-subtext');
-        const progressBar = document.getElementById('progress-bar');
-        const statusElement = document.getElementById('status');
-        const scene = document.querySelector('a-scene');
+    // Smoothing variables
+    const smoothFactor = 0.2; // How much to smooth (0.1 = very smooth, 0.9 = very responsive)
+    const smoothCount = 2; // How many frames to average
+    let previousPositions = {};
+    let frameCount = 0;
 
-        // Track loading progress
-        let assetsLoaded = 0;
-        const totalAssets = 4; // 2 images + 2 models
+    // Function to get a smoothed position
+    function getSmoothedPosition(entity, targetIndex) {
+        const currentPosition = entity.getAttribute('position');
 
-        // Update progress bar
-        function updateProgress() {
-            assetsLoaded++;
-            const progress = (assetsLoaded / totalAssets) * 100;
-            progressBar.style.width = progress + '%';
-            
-            if (assetsLoaded === totalAssets) {
-                loadingSubtext.textContent = "Finalizing AR experience...";
-            }
+        // Initialize the history for this target if it doesn't exist
+        if (!previousPositions[targetIndex]) {
+            previousPositions[targetIndex] = Array(smoothCount).fill().map(() => Object.assign({}, currentPosition));
         }
 
-        // Listen for asset loading
-        document.querySelector('a-scene').addEventListener('loaded', function() {
-            // Check when each asset loads
-            const assets = document.querySelectorAll('a-asset-item, img');
-            assets.forEach(asset => {
-                asset.addEventListener('loaded', updateProgress);
-                asset.addEventListener('error', function() {
-                    console.error('Failed to load asset:', asset.src || asset.id);
-                    updateProgress(); // Continue anyway
-                });
-            });
-        });
+        // Store the current position in the history
+        previousPositions[targetIndex][frameCount % smoothCount] = Object.assign({}, currentPosition);
 
-        // MindAR ready event
-        scene.addEventListener('arReady', (e) => {
-            loadingText.textContent = "AR System Ready!";
-            loadingSubtext.textContent = "Starting experience...";
-            
-            // Hide loading screen with delay
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    document.querySelector('a-scene').style.opacity = '1';
-                    statusElement.style.display = 'block';
-                }, 500);
-            }, 1000);
-        });
-
-        // MindAR error event
-        scene.addEventListener('arError', (e) => {
-            console.error('AR Error:', e.detail);
-            loadingText.textContent = "Error Initializing AR";
-            loadingSubtext.textContent = "Please check console for details";
-            loadingScreen.style.background = 'rgba(200, 0, 0, 0.8)';
-        });
-
-        // Target tracking events
-        scene.addEventListener('targetFound', event => {
-            statusElement.textContent = "Target detected!";
-            statusElement.style.background = 'rgba(76, 175, 80, 0.9)';
-        });
-
-        scene.addEventListener('targetLost', event => {
-            statusElement.textContent = "Point camera at a target";
-            statusElement.style.background = 'rgba(0, 0, 0, 0.7)';
-        });
-
-        // Smoothing script (your existing code)
-        const smoothFactor = 0.3;
-        const smoothCount = 5;
-        let previousPositions = {};
-        let frameCount = 0;
-
-        function getSmoothedPosition(entity, targetIndex) {
-            const currentPosition = entity.getAttribute('position');
-            if (!previousPositions[targetIndex]) {
-                previousPositions[targetIndex] = Array(smoothCount).fill().map(() => Object.assign({}, currentPosition));
-            }
-            previousPositions[targetIndex][frameCount % smoothCount] = Object.assign({}, currentPosition);
-            let avgX = 0, avgY = 0, avgZ = 0;
-            for (let i = 0; i < smoothCount; i++) {
-                avgX += previousPositions[targetIndex][i].x;
-                avgY += previousPositions[targetIndex][i].y;
-                avgZ += previousPositions[targetIndex][i].z;
-            }
-            avgX /= smoothCount;
-            avgY /= smoothCount;
-            avgZ /= smoothCount;
-            const smoothedPosition = {
-                x: currentPosition.x * (1 - smoothFactor) + avgX * smoothFactor,
-                y: currentPosition.y * (1 - smoothFactor) + avgY * smoothFactor,
-                z: currentPosition.z * (1 - smoothFactor) + avgZ * smoothFactor
-            };
-            frameCount++;
-            return smoothedPosition;
+        // Calculate the average position
+        let avgX = 0, avgY = 0, avgZ = 0;
+        for (let i = 0; i < smoothCount; i++) {
+            avgX += previousPositions[targetIndex][i].x;
+            avgY += previousPositions[targetIndex][i].y;
+            avgZ += previousPositions[targetIndex][i].z;
         }
+        avgX /= smoothCount;
+        avgY /= smoothCount;
+        avgZ /= smoothCount;
 
-        scene.addEventListener('tick', function() {
-            const targetEntities = document.querySelectorAll('[mindar-image-target]');
-            targetEntities.forEach(entity => {
-                const targetIndex = entity.getAttribute('mindar-image-target').targetIndex;
-                const model = entity.querySelector('[gltf-model]');
-                const plane = entity.querySelector('[src]');
-                if (model && plane) {
-                    const smoothedPos = getSmoothedPosition(entity, targetIndex);
-                    const currentRotation = entity.getAttribute('rotation');
-                    let smoothEntity = entity.querySelector('#smooth-holder-' + targetIndex);
-                    if (!smoothEntity) {
-                        smoothEntity = document.createElement('a-entity');
-                        smoothEntity.setAttribute('id', 'smooth-holder-' + targetIndex);
-                        entity.appendChild(smoothEntity);
-                        smoothEntity.appendChild(model);
-                        smoothEntity.appendChild(plane);
-                    }
-                    smoothEntity.setAttribute('position', smoothedPos);
-                    smoothEntity.setAttribute('rotation', currentRotation);
+        // Apply the smoothing
+        const smoothedPosition = {
+            x: currentPosition.x * (1 - smoothFactor) + avgX * smoothFactor,
+            y: currentPosition.y * (1 - smoothFactor) + avgY * smoothFactor,
+            z: currentPosition.z * (1 - smoothFactor) + avgZ * smoothFactor
+        };
+
+        frameCount++;
+        return smoothedPosition;
+    }
+
+    // Apply smoothing on every tick of the scene
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('tick', function() {
+        const targetEntities = document.querySelectorAll('[mindar-image-target]');
+        
+        targetEntities.forEach(entity => {
+            const targetIndex = entity.getAttribute('mindar-image-target').targetIndex;
+            const model = entity.querySelector('[gltf-model]');
+            const plane = entity.querySelector('[src]');
+
+            if (model && plane) {
+                const smoothedPos = getSmoothedPosition(entity, targetIndex);
+                const currentRotation = entity.getAttribute('rotation');
+                
+                // Create a new parent entity for smooth movement
+                let smoothEntity = entity.querySelector('#smooth-holder-' + targetIndex);
+                if (!smoothEntity) {
+                    smoothEntity = document.createElement('a-entity');
+                    smoothEntity.setAttribute('id', 'smooth-holder-' + targetIndex);
+                    entity.appendChild(smoothEntity);
+                    // Move the model and plane to be children of the smooth entity
+                    smoothEntity.appendChild(model);
+                    smoothEntity.appendChild(plane);
                 }
-            });
+                
+                // Apply the smoothed position and original rotation
+                smoothEntity.setAttribute('position', smoothedPos);
+                smoothEntity.setAttribute('rotation', currentRotation);
+            }
         });
-    </script>
-</body>
+    });
+</script>
+
+
+  </body>
 </html>
